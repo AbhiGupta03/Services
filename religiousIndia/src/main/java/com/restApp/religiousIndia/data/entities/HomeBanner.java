@@ -22,6 +22,58 @@ public class HomeBanner {
 
 	private String bannerDesc;
 
+	private String isTemple;
+
+	private String isPandit;
+
+	private String isEvent;
+
+	private String templeId;
+
+	private String panditId;
+
+	private String eventId;
+
+	public String getIsPandit() {
+		return isPandit;
+	}
+
+	public void setIsPandit(String isPandit) {
+		this.isPandit = isPandit;
+	}
+
+	public String getIsEvent() {
+		return isEvent;
+	}
+
+	public void setIsEvent(String isEvent) {
+		this.isEvent = isEvent;
+	}
+
+	public String getTempleId() {
+		return templeId;
+	}
+
+	public void setTempleId(String templeId) {
+		this.templeId = templeId;
+	}
+
+	public String getPanditId() {
+		return panditId;
+	}
+
+	public void setPanditId(String panditId) {
+		this.panditId = panditId;
+	}
+
+	public String getEventId() {
+		return eventId;
+	}
+
+	public void setEventId(String eventId) {
+		this.eventId = eventId;
+	}
+
 	@Column(name = "IS_ACTIVE")
 	private String isActive;
 
@@ -85,6 +137,14 @@ public class HomeBanner {
 	public String toString() {
 		return "HomeBanner [imageId=" + imageId + ", bannerName=" + bannerName + ", itemId=" + itemId + ", subItemId="
 				+ subItemId + ", dataId=" + dataId + ", bannerDesc=" + bannerDesc + ", isActive=" + isActive + "]";
+	}
+
+	public String getIsTemple() {
+		return isTemple;
+	}
+
+	public void setIsTemple(String isTemple) {
+		this.isTemple = isTemple;
 	}
 
 }

@@ -10,8 +10,8 @@ import org.hibernate.HibernateException;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.id.IdentifierGenerator;
 
-public class TempleIdGenrator implements IdentifierGenerator {
-	private static Logger logger = Logger.getLogger(TempleIdGenrator.class);
+public class CmsTempleIdGenrator implements IdentifierGenerator {
+	private static Logger logger = Logger.getLogger(CmsTempleIdGenrator.class);
 
 	@Override
 	public Serializable generate(SessionImplementor session, Object object) throws HibernateException {
@@ -23,7 +23,7 @@ public class TempleIdGenrator implements IdentifierGenerator {
 
 			Statement statement = connection.createStatement();
 
-			ResultSet rs = statement.executeQuery("select count(Temple_Id) as Id from religious_india.ri_temple");
+			ResultSet rs = statement.executeQuery("select count(Temple_Id) as Id from religious_india.ri_temple_temp");
 
 			if (rs.next()) {
 				int id = rs.getInt(1) + 101;

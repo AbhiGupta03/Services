@@ -10,20 +10,20 @@ import org.hibernate.HibernateException;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.id.IdentifierGenerator;
 
-public class TempleIdGenrator implements IdentifierGenerator {
-	private static Logger logger = Logger.getLogger(TempleIdGenrator.class);
+public class PanditIdGenrator implements IdentifierGenerator {
+	private static Logger logger = Logger.getLogger(PanditIdGenrator.class);
 
 	@Override
 	public Serializable generate(SessionImplementor session, Object object) throws HibernateException {
 		Connection connection = session.connection();
 
-		String prefix = "Temple";
+		String prefix = "Pandit";
 
 		try {
 
 			Statement statement = connection.createStatement();
 
-			ResultSet rs = statement.executeQuery("select count(Temple_Id) as Id from religious_india.ri_temple");
+			ResultSet rs = statement.executeQuery("select count(Pandit_Id) as Id from religious_india.ri_pandit_details");
 
 			if (rs.next()) {
 				int id = rs.getInt(1) + 101;

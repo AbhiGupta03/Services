@@ -3,6 +3,7 @@ package com.restApp.religiousIndia.response;
 import com.restApp.religiousIndia.response.status.ResponseStatus;
 
 public class Response {
+
 	private ResponseStatus status;
 	private Object response;
 

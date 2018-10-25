@@ -6,18 +6,28 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.log4j.Logger;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 
+import com.restApp.religiousIndia.response.Response;
+import com.restApp.religiousIndia.response.status.ResponseStatus;
+import com.restApp.religiousIndia.utilities.PanditIdGenrator;
+
 @Component
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
+	private static Logger logger = Logger.getLogger(JwtAuthenticationEntryPoint.class);
 
 	@Override
 	public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException e)
 			throws IOException, ServletException {
-		response.sendError(HttpServletResponse.SC_UNAUTHORIZED,
-				"Sorry,Either you are not authorized or your session has been expired");
+
+		logger.error("UNAUTHORIZED error:"+e.getMessage());
+		response.setContentType("application/json");
+		response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+		response.getOutputStream().println("{ \"status\": \"" + ResponseStatus.UNAUTHORIZED + "\",\"response\": \""
+				+ "Please login to access this URL" + "\" }");
 	}
 
 }

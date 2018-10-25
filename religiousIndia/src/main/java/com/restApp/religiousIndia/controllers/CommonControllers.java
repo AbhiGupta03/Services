@@ -63,7 +63,7 @@ public class CommonControllers {
 		logger.info("All Cities Service.");
 		return commonDataService.getAllCities();
 	}
-	
+
 	@GetMapping("/getAllStates")
 	public List<String> getAllStates() {
 		logger.info("All States Service.");
@@ -104,8 +104,13 @@ public class CommonControllers {
 		logger.info("Getting Banner Details");
 		return homeDataService.getHomeBannerDetails();
 	}
+	
+	/*@GetMapping("/getBannerDetails")
+	public List<Map<String, String>> getBannerDetails() {
+		logger.info("Getting Banner Details");
+		return homeDataService.getBannerDetails();
+	}*/
 
-	// TO-DO
 	@GetMapping("/getLogInType/{loginId}")
 	public String getLogInType(@PathVariable("loginId") String loginId) {
 		return commonDataService.getLoginType(loginId);
@@ -138,14 +143,8 @@ public class CommonControllers {
 
 	}
 
-	@GetMapping("/Test")
-	public void getPinCodeForAddress() {
-		nearByDetails.getPinCodeForAddress("C-545, New Ashok Nagar,Delhi");
+	@GetMapping("/getLatestUploadedImages")
+	public ResponseEntity<Response> getLatestUploadedImages() {
+		return ResponseEntity.ok(commonDataService.getLatestUploadedImages());
 	}
-
-	@GetMapping("/Test2/{userId}")
-	public String getUserLocation(@PathVariable("userId") Integer userId) {
-		return nearByDetails.getUserLocation(userId);
-	}
-
 }

@@ -432,8 +432,8 @@ public class TempleServicesImpl implements TempleServices {
 
 					// remove duplicate cities
 					/*
-					 * Set<String> set = new HashSet<String>(listOfCities);
-					 * List<String> listOftotalCities = new ArrayList<>(set);
+					 * Set<String> set = new HashSet<String>(listOfCities); List<String>
+					 * listOftotalCities = new ArrayList<>(set);
 					 */
 					if (listOfCities != null && listOfCities.size() != 0) {
 						templesByCityName = getTemplesByCityName(listOfCities, shortBy);
@@ -773,7 +773,7 @@ public class TempleServicesImpl implements TempleServices {
 	}
 
 	private List<Map<String, Object>> getPopularTemplesList(List<Temple> mostHitsTemples) {
-		List<Map<String, Object>> list = new ArrayList();
+		List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
 		Address address = null;
 		for (Temple temple : mostHitsTemples) {
 			Map<String, Object> map = new HashMap<>();
@@ -784,7 +784,12 @@ public class TempleServicesImpl implements TempleServices {
 
 			map.put("City", address.getCity());
 			map.put("Temple_Id", temple.getTempleId());
+
+			String Url = address.getState() + "/" + address.getDist() + "/" + "temple-details" + "/"
+					+ temple.getTempleName() + "/" + address.getAddressDetail() + "/" + temple.getTempleId();
 			map.put("Temple_Detail_Desc", temple.getTempleDesc());
+			map.put("URL", Url);
+
 			list.add(map);
 		}
 		return list;

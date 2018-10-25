@@ -8,6 +8,7 @@ import java.util.Map;
 import javax.transaction.Transactional;
 
 import org.apache.log4j.Logger;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,11 +68,12 @@ public class CmsTempleService {
 		try {
 			String contactNoList = (String) map.get("contactNo");
 			String templeName = (String) map.get("templeName");
-			List<String> templeAddress = (List<String>) map.get("address");
+			Map<String, String> templeAddress = (Map<String, String>) map.get("address");
 			String templeDesc = (String) map.get("templeDesc");
-			String templeTimings = (String) map.get("templeTiming");
-			String aartiTimings = (String) map.get("aartiTiming");
-			String mainImageId = (String) map.get("mainImageId");
+			List<String> templeTimings = (List<String>) map.get("templeTiming");
+			List<String> aartiTimings = (List<String>) map.get("aartiTiming");
+			String mainImageId = (String) map.get("image");
+			List<String> templeGalleryImages = (List<String>) map.get("templeGalleryImages");
 
 			if (contactNoList != null) {
 				String contactNo = contactNoList;
@@ -127,7 +129,7 @@ public class CmsTempleService {
 			if (templeAddress != null) {
 
 				if (!templeAddress.isEmpty()) {
-					String addressData = saveAddressDataForTemple(templeAddress.get(0)).toString();
+					String addressData = saveAddressDataForTemple(templeAddress).toString();
 
 					if (addressData != null) {
 						temple.setTempleAddressData(addressData);
@@ -162,11 +164,8 @@ public class CmsTempleService {
 			}
 
 			if (templeTimings != null) {
-				String[] templeTimingsList = templeTimings.split(",");
-				String timing = null;
-				for (String templeTiming : templeTimingsList) {
-					timing = String.join("AND", templeTiming);
-				}
+				
+				String timing = String.join(",", templeTimings);
 
 				if (timing != null) {
 					temple.setTempleTiming(timing);
@@ -179,14 +178,18 @@ public class CmsTempleService {
 			}
 
 			if (aartiTimings != null) {
-				String aarti = null;
-				String[] aartiTimingsList = aartiTimings.split(",");
-				for (String aartiTiming : aartiTimingsList) {
-					aarti = String.join("AND", aartiTiming);
-				}
+				
+				String aarti = String.join(",", aartiTimings);
 
 				if (aarti != null) {
 					temple.setAartiTiming(aarti);
+				}
+			}
+
+			if (templeGalleryImages != null) {
+				if (templeGalleryImages.size() != 0) {
+					String templeImageList = String.join(",", templeGalleryImages);
+					temple.setImageGallery(templeImageList);
 				}
 			}
 
@@ -241,6 +244,33 @@ public class CmsTempleService {
 			return address;
 
 		} catch (JSONException e) {
+			logger.error("Error in saveAddressDataForTemple:" + e);
+			return null;
+		}
+	}
+
+	private Address saveAddressDataForTemple(Map<String, String> addressObject) {
+		try {
+			Address address = new Address();
+
+			String state = addressObject.get("state");
+			String city = addressObject.get("city");
+			String dist = addressObject.get("dist");
+			String addressDetails = addressObject.get("address");
+			String addressContactNo = addressObject.get("addressContactNo");
+
+			address.setState(state);
+			address.setCity(city);
+			address.setDist(dist);
+			address.setAddressDetail(addressDetails);
+			address.setContactNo(addressContactNo);
+
+			address.setIsActive("0");
+
+			address.setIsTempleAddress("1");
+
+			return address;
+		} catch (Exception e) {
 			logger.error("Error in saveAddressDataForTemple:" + e);
 			return null;
 		}
@@ -354,7 +384,7 @@ public class CmsTempleService {
 		String imagePath = imageService.getImagePath(temple.getMainImageData());
 		String imageType = imageService.getImageType(temple.getMainImageData());
 
-		map.put("imagePath", "images/" + imagePath);
+		map.put("image", "images/" + imagePath);
 		Address templeAddressToVerify = getTempleAddressToVerify(temple.getTempleAddressData());
 
 		Map<String, String> addressMap = new HashMap<>();
@@ -396,16 +426,28 @@ public class CmsTempleService {
 
 			temple.setTempleName(cmsTemple.getTempleName());
 
-			String imageId = saveImageDetail(cmsTemple.getMainImageData());
+			String galleryObject = createImageGalleryObject(cmsTemple.getImageGallery());
 
-			if (imageId != null) {
-				temple.setMainImageID(imageId);
+			temple.setImageGallery(galleryObject);
+			if (cmsTemple.getMainImageData() != null) {
+				Boolean isImageDetailUpdated = updateImageDetail(cmsTemple.getMainImageData());
+
+				if (isImageDetailUpdated) {
+
+					temple.setMainImageID(cmsTemple.getMainImageData());
+
+				} else {
+					logger.error("Error while updating image to DB");
+					response.setStatus(ResponseStatus.INTERNAL_SERVER_ERROR);
+					response.setResponse("Something went wrong.Please Try Later");
+					return response;
+				}
 			} else {
-				logger.error("Error while saving image to DB");
-				response.setStatus(ResponseStatus.INTERNAL_SERVER_ERROR);
-				response.setResponse("Something went wrong.Please Try Later");
+				response.setStatus(ResponseStatus.ERROR);
+				response.setResponse("Main image id not found");
 				return response;
 			}
+
 			Address templeAddress = saveAddressDataForTemple(cmsTemple.getTempleAddressData());
 
 			Address addressSaved = addressRepo.save(templeAddress);
@@ -438,6 +480,26 @@ public class CmsTempleService {
 		}
 
 		return response;
+	}
+
+	private String createImageGalleryObject(String imageGallery) {
+		try {
+			JSONArray jsonArray = new JSONArray();
+
+			String[] galleryImages = imageGallery.split(",");
+
+			for (String galleryImage : galleryImages) {
+				JSONObject jsonObject = new JSONObject();
+
+				jsonObject.put("imageId", galleryImage);
+
+				jsonArray.put(jsonObject);
+			}
+
+			return jsonArray.toString();
+		} catch (Exception e) {
+			return null;
+		}
 	}
 
 	@Transactional
@@ -694,18 +756,32 @@ public class CmsTempleService {
 		return response;
 	}
 
-	public String saveImage(String imageType, String originalFilename) {
+	public String saveImage(String imageType, String originalFilename,String type) {
 		Image image = new Image();
-		image.setCategory("");
-		image.setImagePath(originalFilename);
-		image.setImageType(imageType);
+		if (type.equalsIgnoreCase("image")) {
+			image.setCategory("");
+			image.setImagePath(originalFilename);
+			image.setImageType(imageType);
 
-		String saveImageId = imageService.saveImageToDb(image);
+			String saveImageId = imageService.saveImageToDb(image);
 
-		if (saveImageId != null) {
-			return saveImageId;
+			if (saveImageId != null) {
+				return saveImageId;
+			} else {
+				return null;
+			}
 		} else {
-			return null;
+			image.setCategory("");
+			image.setImagePath(originalFilename);
+			image.setImageType(imageType);
+
+			String saveImageId = imageService.saveImageToDb(image);
+
+			if (saveImageId != null) {
+				return saveImageId;
+			} else {
+				return null;
+			}
 		}
 	}
 
@@ -724,31 +800,19 @@ public class CmsTempleService {
 
 		return response;
 	}
-	
-	private String updateImageDetail(String imageDetail) {
 
-		try {
-			JSONObject imageJsonObject = new JSONObject(imageDetail);
+	private Boolean updateImageDetail(String imageId) {
+		Image image = imageService.getImage(imageId);
 
-			String imageType = (String) imageJsonObject.get("imageType");
-			String imagePath = (String) imageJsonObject.get("imagePath");
+		image.setCategory("Temple");
+		image.setImagePath("images/" + image.getImagePath());
 
-			Image image = new Image();
+		String saveImageToDb = imageService.saveImageToDb(image);
 
-			image.setCategory("Temple");
-			image.setImagePath(imagePath);
-			image.setImageType(imageType);
-
-			String savedTempleId = imageService.saveImageToDb(image);
-
-			if (savedTempleId != null) {
-				return savedTempleId;
-			}
-
-		} catch (Exception e) {
-			logger.error("Error in saveImageDetail:" + e);
-			return null;
+		if (saveImageToDb != null) {
+			return true;
+		} else {
+			return false;
 		}
-		return null;
 	}
 }

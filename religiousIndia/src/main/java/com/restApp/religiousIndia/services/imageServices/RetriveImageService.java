@@ -1,5 +1,7 @@
 package com.restApp.religiousIndia.services.imageServices;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -32,51 +34,38 @@ public class RetriveImageService {
 	 * imageRepository.save(blackImage); } }
 	 */
 
-	/*public void retriveImage() {
-		List<Images> all = imageRepository.findAll();
-		for (Images images : all) {
-			Images image = images;
-			try {
-				String path = "retrieve-dir/" + images.getImageId() + "." + images.getImageType();
-				Files.write(Paths.get(path), images.getImage());
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-		// Images images = all.get(0);
+	/*
+	 * public void retriveImage() { List<Images> all = imageRepository.findAll();
+	 * for (Images images : all) { Images image = images; try { String path =
+	 * "retrieve-dir/" + images.getImageId() + "." + images.getImageType();
+	 * Files.write(Paths.get(path), images.getImage()); } catch (IOException e) {
+	 * e.printStackTrace(); } } // Images images = all.get(0);
+	 * 
+	 * }
+	 */
 
-	}*/
+	/*
+	 * public String imageToBase64_2(String imageId) { Images retriveImageByID =
+	 * retriveImageByID(imageId); String imageType =
+	 * retriveImageByID.getImageType(); String byteArrayString = "data:image/" +
+	 * imageType + ";base64,"; byte[] imageArraay = retriveImageByID.getImage();
+	 * 
+	 * byteArrayString += Base64.encodeBase64String(imageArraay); //
+	 * System.out.println(byteArrayString);
+	 * 
+	 * return byteArrayString; }
+	 */
 
-	/*public String imageToBase64_2(String imageId) {
-		Images retriveImageByID = retriveImageByID(imageId);
-		String imageType = retriveImageByID.getImageType();
-		String byteArrayString = "data:image/" + imageType + ";base64,";
-		byte[] imageArraay = retriveImageByID.getImage();
-
-		byteArrayString += Base64.encodeBase64String(imageArraay);
-		// System.out.println(byteArrayString);
-
-		return byteArrayString;
-	}*/
-
-	/*public String imageToBase64() {
-		File file = new File("E:/ReligiousIndia/relegiousIndia/src/main/resources/image/temple.jpg");
-		String byteArrayString = "data:image/jpeg;base64,";
-		try {
-			FileInputStream inputStream = new FileInputStream(file);
-			byte[] imageArraay = new byte[(int) file.length()];
-			try {
-				inputStream.read(imageArraay);
-				byteArrayString += Base64.encodeBase64String(imageArraay);
-				System.out.println(byteArrayString);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
-		return byteArrayString;
-	}*/
+	/*
+	 * public String imageToBase64() { File file = new
+	 * File("E:/ReligiousIndia/relegiousIndia/src/main/resources/image/temple.jpg");
+	 * String byteArrayString = "data:image/jpeg;base64,"; try { FileInputStream
+	 * inputStream = new FileInputStream(file); byte[] imageArraay = new byte[(int)
+	 * file.length()]; try { inputStream.read(imageArraay); byteArrayString +=
+	 * Base64.encodeBase64String(imageArraay); System.out.println(byteArrayString);
+	 * } catch (IOException e) { e.printStackTrace(); } } catch
+	 * (FileNotFoundException e) { e.printStackTrace(); } return byteArrayString; }
+	 */
 
 	public Images retriveImageByID(String imageId) {
 		Images findByImageId = imageRepository.findByImageId(imageId);
@@ -88,23 +77,28 @@ public class RetriveImageService {
 	public String getImagePath(String imageId) {
 		return dummyRepositry.findOne(imageId).getImagePath();
 	}
-	
+
 	public String getImageType(String imageId) {
 		return dummyRepositry.findOne(imageId).getImageType();
 	}
-	
+
 	public String saveImageToDb(Image image) {
 		Image save = dummyRepositry.save(image);
-		
+
 		if (save != null) {
 			return save.getImageId();
-		}else {
+		} else {
 			return null;
 		}
 	}
-	
+
 	public Image getImage(String imageId) {
 		return dummyRepositry.findOne(imageId);
+	}
+
+	public List<Image> getLatestUploadedImages() {
+		return dummyRepositry.getLatestUploadedImages("1");
+
 	}
 
 }

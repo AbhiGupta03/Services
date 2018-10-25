@@ -15,17 +15,17 @@ import com.restApp.religiousIndia.utilities.audits.AuditFields;
 public class CmsTemple extends AuditFields<String> {
 
 	@Id
-	@GenericGenerator(name = "sequence_id", strategy = "com.restApp.religiousIndia.utilities.TempleIdGenrator")
+	@GenericGenerator(name = "sequence_id", strategy = "com.restApp.religiousIndia.utilities.CmsTempleIdGenrator")
 	@GeneratedValue(generator = "sequence_id")
 	@Column(name = "temple_id")
 	private String templeId;
 
 	private String templeName;
-	
-	private String templeDesc; 
-	
+
+	private String templeDesc;
+
 	private String authChannelPartner;
-	
+
 	private String isVerified;
 
 	@Column(name = "MAIN_IMAGE_Detail", columnDefinition = "TEXT")
