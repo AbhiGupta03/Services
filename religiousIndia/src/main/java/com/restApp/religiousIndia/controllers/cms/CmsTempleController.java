@@ -12,7 +12,6 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -34,6 +33,7 @@ import com.restApp.religiousIndia.response.status.ResponseStatus;
 import com.restApp.religiousIndia.services.cmsServices.CmsPanditServices;
 import com.restApp.religiousIndia.services.cmsServices.CmsTempleService;
 import com.restApp.religiousIndia.services.users.UserServices;
+import com.restApp.religiousIndia.utilities.AmazonClient;
 
 @RestController
 @CrossOrigin
@@ -47,7 +47,7 @@ public class CmsTempleController {
 	private CmsPanditServices cmsPanditServices;
 
 	@Autowired
-	UserServices userServices;
+	private UserServices userServices;
 
 	@Value("${folderToUploadImages}")
 	private final String folderToUploadImages = null;
@@ -56,6 +56,18 @@ public class CmsTempleController {
 	private final String folderToUploadVideos = null;
 
 	private Path write;
+
+	private AmazonClient amazonClient;
+
+	@Autowired
+	CmsTempleController(AmazonClient amazonClient) {
+		this.amazonClient = amazonClient;
+	}
+
+	@PostMapping("/uploadFile")
+	public String uploadFile(@RequestParam(value = "file") MultipartFile file) {
+		return this.amazonClient.uploadFile(file);
+	}
 
 	@GetMapping("/getAllRoles")
 	@PreAuthorize("hasRole('ROLE_SUPER_ADMIN')")
