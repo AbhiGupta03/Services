@@ -361,14 +361,17 @@ public class CmsTempleController {
 	@PostMapping("/saveNewPanditDetails")
 	@PreAuthorize("isAuthenticated()")
 	public ResponseEntity<Response> saveNewPanditDetails(@RequestBody PostRequestWithObject request) {
+		logger.info("/saveNewPanditDetails method");
 		Response response = new Response();
 		try {
 			response = cmsPanditServices.saveNewPanditDetails(request);
+			logger.info("/saveNewPanditDetails request completed successfully.");
 			return ResponseEntity.ok(response);
 		} catch (Exception e) {
 			logger.error("Error in saveNewPanditDetails(CMSController):" + e);
 			response.setStatus(ResponseStatus.INTERNAL_SERVER_ERROR);
 			response.setResponse("");
+			logger.info("/saveNewPanditDetails request Failed.");
 			return ResponseEntity.ok(response);
 		}
 	}

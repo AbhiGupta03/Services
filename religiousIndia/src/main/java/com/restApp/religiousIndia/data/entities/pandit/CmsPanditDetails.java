@@ -39,6 +39,9 @@ public class CmsPanditDetails extends AuditFields<String> {
 
 	private String isFreeLancer;
 
+	@Column(name = "Is_New_User")
+	private String isNewUser;
+
 	private String panditDesc;
 
 	private String isAssociatedWithTemple;
@@ -213,6 +216,14 @@ public class CmsPanditDetails extends AuditFields<String> {
 
 	public void setGeneralAvailablityTiming(String generalAvailablityTiming) {
 		this.generalAvailablityTiming = generalAvailablityTiming;
+	}
+
+	public String getIsNewUser() {
+		return isNewUser;
+	}
+
+	public void setIsNewUser(String isNewUser) {
+		this.isNewUser = isNewUser;
 	}
 
 	/*
