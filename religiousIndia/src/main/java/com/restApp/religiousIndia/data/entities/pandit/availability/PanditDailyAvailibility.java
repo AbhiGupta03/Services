@@ -18,7 +18,7 @@ public class PanditDailyAvailibility {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "PANDIT_DAILY_AVAILABILITY_TIMINGS_ID")
-	private Double availabiltyId;
+	private Integer availabiltyId;
 
 	@Column(name = "MONDAY")
 	private String mondayTiming;
@@ -127,11 +127,11 @@ public class PanditDailyAvailibility {
 		this.versionId = versionId;
 	}
 
-	public Double getAvailabiltyId() {
+	public Integer getAvailabiltyId() {
 		return availabiltyId;
 	}
 
-	public void setAvailabiltyId(Double availabiltyId) {
+	public void setAvailabiltyId(Integer availabiltyId) {
 		this.availabiltyId = availabiltyId;
 	}
 }

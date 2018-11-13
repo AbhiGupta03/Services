@@ -32,6 +32,7 @@ import com.restApp.religiousIndia.response.Response;
 import com.restApp.religiousIndia.response.status.ResponseStatus;
 import com.restApp.religiousIndia.services.cmsServices.CmsPanditServices;
 import com.restApp.religiousIndia.services.cmsServices.CmsTempleService;
+import com.restApp.religiousIndia.services.mail.MailService;
 import com.restApp.religiousIndia.services.users.UserServices;
 import com.restApp.religiousIndia.utilities.AmazonClient;
 
@@ -48,6 +49,9 @@ public class CmsTempleController {
 
 	@Autowired
 	private UserServices userServices;
+
+	@Autowired
+	MailService mailService;
 
 	@Value("${folderToUploadImages}")
 	private final String folderToUploadImages = null;
@@ -98,16 +102,13 @@ public class CmsTempleController {
 						saveTempleDataResponse = cmsTempleService.saveTempleData(request.getRequestParam());
 
 						if (saveTempleDataResponse.getStatus().equals(ResponseStatus.OK)) {
-							/*
-							 * if (!file.isEmpty()) { // Get the image and save it try { byte[] bytes =
-							 * file.getBytes();
-							 * 
-							 * Path path = Paths.get(folderToUploadImages + file.getOriginalFilename());
-							 * 
-							 * write = Files.write(path, bytes); System.out.println(write); } catch
-							 * (Exception e) { System.out.println("Error in:" + e); } }
-							 */
-							// mailService.sendEmail(to, messageBody, subject, isHtml);
+							String mailSignature = mailService.getMailSignature();
+
+							String messageBody = "<div>New Temple details saved.Will let you know once its data verified by our support team</div><br>";
+
+							messageBody += mailSignature;
+
+							mailService.sendEmail("", messageBody, "Temple details Saved", true);
 						}
 					}
 				}
@@ -388,6 +389,21 @@ public class CmsTempleController {
 		}
 	}
 
+	@GetMapping("/getUnverifiedPanditsList")
+	@PreAuthorize("hasRole('ROLE_SUPER_ADMIN') or hasRole('ROLE_ADMIN')")
+	public ResponseEntity<Response> getUnverifiedPanditsList() {
+		Response response = new Response();
+		try {
+			response = cmsPanditServices.getUnverifiedPanditsList();
+			return ResponseEntity.ok(response);
+		} catch (Exception e) {
+			logger.error("/getUnverifiedPanditsList request Failed.");
+			response.setStatus(ResponseStatus.ERROR);
+			response.setResponse("");
+			return ResponseEntity.ok(response);
+		}
+	}
+
 	@GetMapping("/getUsersByName")
 	public ResponseEntity<Response> getUsersByName(@RequestParam("name") String name) {
 		Response response = new Response();
@@ -409,6 +425,56 @@ public class CmsTempleController {
 			logger.error("Error in getUsersByName(CMSController):" + e);
 			response.setStatus(ResponseStatus.INTERNAL_SERVER_ERROR);
 			response.setResponse("");
+			return ResponseEntity.ok(response);
+		}
+	}
+
+	@GetMapping("/savePanditAsVerified/{panditId}")
+	@PreAuthorize("hasRole('ROLE_SUPER_ADMIN') or hasRole('ROLE_ADMIN')")
+	public ResponseEntity<Response> savePanditAsVerified(@PathVariable("panditId") String panditId) {
+		Response response = new Response();
+		try {
+			logger.info("savePanditAsVerified request");
+			response = cmsPanditServices.savePanditAsVerfied(panditId);
+			return ResponseEntity.ok(response);
+		} catch (Exception e) {
+			logger.info("/savePanditAsVerified request failed.");
+			response.setStatus(ResponseStatus.INTERNAL_SERVER_ERROR);
+			response.setResponse("");
+			return ResponseEntity.ok(response);
+
+		}
+	}
+
+	@PostMapping("/saveNewPanditDetailsAsVerified")
+	@PreAuthorize("hasRole('ROLE_SUPER_ADMIN')")
+	public ResponseEntity<Response> saveNewPanditDetailsAsVerified(@RequestBody PostRequestWithObject request) {
+		logger.info("/saveNewPanditDetailsAsVerified method");
+		Response response = new Response();
+		try {
+			response = cmsPanditServices.saveNewPanditDetailsAsVerified(request);
+			logger.info("/saveNewPanditDetailsAsVerified request completed successfully.");
+			return ResponseEntity.ok(response);
+		} catch (Exception e) {
+			logger.error("Error in saveNewPanditDetails(CMSController):" + e);
+			response.setStatus(ResponseStatus.INTERNAL_SERVER_ERROR);
+			response.setResponse("");
+			logger.info("/saveNewPanditDetailsAsVerified request Failed.");
+			return ResponseEntity.ok(response);
+		}
+	}
+
+	@GetMapping("/getAllPoojaServicesList")
+	public ResponseEntity<Response> getAllPoojaServicesList() {
+		logger.info("/getAllPoojaServicesList request");
+		Response response = new Response();
+		try {
+			response = cmsPanditServices.getAllPoojaServicesList();
+			return ResponseEntity.ok(response);
+		} catch (Exception e) {
+			response.setStatus(ResponseStatus.INTERNAL_SERVER_ERROR);
+			response.setResponse("");
+			logger.info("/getAllPoojaServicesList request failed");
 			return ResponseEntity.ok(response);
 		}
 	}

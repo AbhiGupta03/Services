@@ -21,15 +21,16 @@ public class MailService {
 		logger.info("Sending mail....");
 		try {
 			MimeMessage message = mailSender.createMimeMessage();
-			MimeMessageHelper helper = new MimeMessageHelper(message, true);
-			helper.setTo(to);
-			helper.setText(messageBody, isHtml);
-			helper.setSubject(subject);
+			MimeMessageHelper mimeHelper = new MimeMessageHelper(message, true);
+			mimeHelper.setTo(to);
+			mimeHelper.setText(messageBody, isHtml);
+			mimeHelper.setSubject(subject);
 
 			mailSender.send(message);
 			logger.info("Mail sent successfully");
 			return true;
 		} catch (Exception e) {
+			logger.info("Mail sending failed...");
 			logger.error("Eroor:" + e + " in sendEmail");
 			return false;
 		}
