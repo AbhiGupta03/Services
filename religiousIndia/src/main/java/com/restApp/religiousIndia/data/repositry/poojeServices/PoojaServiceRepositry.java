@@ -12,6 +12,9 @@ public interface PoojaServiceRepositry extends CrudRepository<Pooja, String> {
 	List<Pooja> findByisActive(String isActive);
 
 	List<Pooja> findByServiceNameIn(List<String> serviceName);
+	
+	List<Pooja> findByServiceIdIn(List<String> serviceIdIn);
 
 	List<Pooja> findByisActiveAndPanditId(String isActive, String panditId);
+	
 }

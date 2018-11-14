@@ -14,10 +14,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.restApp.religiousIndia.data.entities.pandit.PanditDetails;
 import com.restApp.religiousIndia.data.entities.pandit.PanditTempleAssociation;
+import com.restApp.religiousIndia.data.entities.pooja.PoojaServicesPricing;
 import com.restApp.religiousIndia.data.entities.users.UserDetailsImpl;
 import com.restApp.religiousIndia.data.repositry.language.LanguageRepositry;
 import com.restApp.religiousIndia.data.repositry.pandit.PanditDetailsRepositry;
@@ -36,23 +38,24 @@ import com.restApp.religiousIndia.services.pooja.PoojaServices;
 @CrossOrigin
 public class PanditController {
 	private static Logger logger = Logger.getLogger(PanditController.class);
-	@Autowired
-	PanditDetailsRepositry panditDetailsRepositry;
 
 	@Autowired
-	RetriveImageService reetriveImageService;
+	private PanditDetailsRepositry panditDetailsRepositry;
 
 	@Autowired
-	UserDetailsRepositry userDetailsRepositry;
+	private RetriveImageService reetriveImageService;
 
 	@Autowired
-	PanditDataService panditDataService;
+	private UserDetailsRepositry userDetailsRepositry;
 
 	@Autowired
-	PoojaServices poojaServices;
+	private PanditDataService panditDataService;
 
 	@Autowired
-	LanguageRepositry languageRepositry;
+	private PoojaServices poojaServices;
+
+	@Autowired
+	private LanguageRepositry languageRepositry;
 
 	@GetMapping("/getPanditAssociatedWithTemple/{templeId}")
 	public ResponseEntity<Response> getPanditAssociatedWithTemple(@PathVariable("templeId") String templeId) {
@@ -98,29 +101,37 @@ public class PanditController {
 	@PostMapping("/getPanditByFilters")
 	public ResponseEntity<Response> getPanditByFilters(@RequestBody PostRequest filterRequest) {
 		Response response = new Response();
-		List<Map<String, Object>> panditByFilters = null;
-		if (filterRequest != null) {
-			logger.info("Pandit(s) under Filter criteria:" + filterRequest.getRequestParam());
+		try {
+			List<Map<String, Object>> panditByFilters = null;
+			if (filterRequest != null) {
+				logger.info("Pandit(s) under Filter criteria:" + filterRequest.getRequestParam());
 
-			panditByFilters = panditDataService.getPanditByFilters(filterRequest);
-			if (panditByFilters != null) {
-				response.setStatus(ResponseStatus.OK);
-				response.setResponse(panditByFilters);
+				panditByFilters = panditDataService.getPanditByFilters(filterRequest);
+				if (panditByFilters != null) {
+					response.setStatus(ResponseStatus.OK);
+					response.setResponse(panditByFilters);
+				} else {
+					response.setStatus(ResponseStatus.NO_DATA_FOUND);
+					response.setResponse("No record found");
+				}
 			} else {
-				response.setStatus(ResponseStatus.NO_DATA_FOUND);
-				response.setResponse("No record found");
+				logger.debug("No Pandit Found in the particular filter data");
+				response.setStatus(ResponseStatus.BAD_REQUEST);
+				response.setResponse("request is invalid");
 			}
-		} else {
-			logger.debug("No Pandit Found in the particular filter data");
-			response.setStatus(ResponseStatus.BAD_REQUEST);
-			response.setResponse("request is invalid");
+			return ResponseEntity.ok(response);
+		} catch (Exception e) {
+			logger.error("Error in getPanditByFilters:" + e);
+			response.setStatus(ResponseStatus.INTERNAL_SERVER_ERROR);
+			response.setResponse("");
+			return ResponseEntity.ok(response);
 		}
-		return ResponseEntity.ok(response);
 	}
 
 	@PostMapping("/servicesOrPanditReview")
 	@PreAuthorize("isAuthenticated()")
-	public ResponseEntity<Response> saveServicesOrPanditReview(@RequestBody PostRequestWithOutArray reviewRequest,@CurrentUser UserPrincipal currentUser) {
+	public ResponseEntity<Response> saveServicesOrPanditReview(@RequestBody PostRequestWithOutArray reviewRequest,
+			@CurrentUser UserPrincipal currentUser) {
 		logger.info("/servicesOrPanditReview request");
 		Response response = new Response();
 
@@ -128,10 +139,10 @@ public class PanditController {
 		if (currentUser != null) {
 			userId = currentUser.getId();
 		}
-		
+
 		if (reviewRequest.getRequestType().equalsIgnoreCase("panditReview")) {
 			Map<String, String> requestParam = reviewRequest.getRequestParam();
-			boolean isSaved = panditDataService.savePanditReview(requestParam,userId);
+			boolean isSaved = panditDataService.savePanditReview(requestParam, userId);
 			if (isSaved) {
 				response.setStatus(ResponseStatus.OK);
 				response.setResponse("Saved Successfully");
@@ -188,8 +199,7 @@ public class PanditController {
 			response.setStatus(ResponseStatus.OK);
 			response.setResponse(panditDetails);
 			return ResponseEntity.ok(response);
-		}
-		else {
+		} else {
 			response.setStatus(ResponseStatus.NO_DATA_FOUND);
 			response.setResponse("Data not found");
 		}
@@ -197,8 +207,7 @@ public class PanditController {
 	}
 
 	/*
-	 * @GetMapping("/getPanditSchedule/{panditId}") public
-	 * ResponseEntity<Response>
+	 * @GetMapping("/getPanditSchedule/{panditId}") public ResponseEntity<Response>
 	 * getPanditAvailibilityDetails(@PathVariable("panditId") String panditId) {
 	 * return ResponseEntity.ok(panditDataService.panditSchedule(panditId)); }
 	 */
@@ -210,7 +219,7 @@ public class PanditController {
 
 	@GetMapping("/getPanditPoojaServices/{panditId}")
 	public ResponseEntity<Response> getPanditPoojaServices(@PathVariable("panditId") String panditId) {
-		Response panditPoojaServices = panditDataService.getPanditPoojaServices(panditId);
+		Response panditPoojaServices = panditDataService.getPanditPoojaServicesDetails(panditId);
 		return ResponseEntity.ok(panditPoojaServices);
 	}
 
@@ -219,11 +228,34 @@ public class PanditController {
 		Response panditArticles = panditDataService.getPanditArticles(panditId);
 		return ResponseEntity.ok(panditArticles);
 	}
-	
+
 	@GetMapping("/getTopPanditsInCity/{city}")
-	public ResponseEntity<Response> getTopPanditsInCity(@PathVariable("city") String city){
-		Response response=panditDataService.getTopPanditsInCity(city);
+	public ResponseEntity<Response> getTopPanditsInCity(@PathVariable("city") String city) {
+		Response response = panditDataService.getTopPanditsInCity(city);
 		return ResponseEntity.ok(response);
+	}
+
+	@GetMapping("/getPoojaServicePackagesDetails")
+	public ResponseEntity<Response> getPoojaServicePackagesDetails(@RequestParam("serviceId") String serviceId) {
+		Response response = new Response();
+
+		List<PoojaServicesPricing> packagesForPoojaService = poojaServices.getPackagesForPoojaService(serviceId);
+
+		if (packagesForPoojaService != null) {
+			if (!packagesForPoojaService.isEmpty()) {
+				List<Map<String,Object>> packagesDetail=poojaServices.getPackageInDetails(packagesForPoojaService);
+				response.setStatus(ResponseStatus.OK);
+				response.setResponse(packagesDetail);
+			} else {
+				response.setStatus(ResponseStatus.NO_DATA_FOUND);
+				response.setResponse("No Package found for requested pooja service");
+			}
+		} else {
+			response.setStatus(ResponseStatus.NO_DATA_FOUND);
+			response.setResponse("No Package found for requested pooja service");
+		}
+		return ResponseEntity.ok(response);
+
 	}
 
 }

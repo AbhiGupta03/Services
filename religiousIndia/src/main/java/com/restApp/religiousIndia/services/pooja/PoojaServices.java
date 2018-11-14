@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import com.restApp.religiousIndia.data.entities.pooja.Pooja;
 import com.restApp.religiousIndia.data.entities.pooja.PoojaServicesPricing;
 import com.restApp.religiousIndia.data.entities.users.CustomerReview.CustomerReview;
+import com.restApp.religiousIndia.data.repositry.poojeServices.PoojaPackageDetailRepositry;
 import com.restApp.religiousIndia.data.repositry.poojeServices.PoojaServicePricingRepositry;
 import com.restApp.religiousIndia.data.repositry.poojeServices.PoojaServiceRepositry;
 import com.restApp.religiousIndia.data.repositry.users.customerReview.CustomerReviewRepositry;
@@ -35,6 +36,9 @@ public class PoojaServices {
 
 	@Autowired
 	CustomerReviewRepositry customerReviewRepositry;
+
+	@Autowired
+	PoojaPackageDetailRepositry poojaPackageDetailRepositry;
 
 	public Response getTemplePoojaServices(String templeId) {
 		Response response = new Response();
@@ -85,8 +89,7 @@ public class PoojaServices {
 		// TO-DO enable after enter all images
 		/*
 		 * for (Pooja pooja : listPooja) {
-		 * pooja.setImageId(retriveImageService.getImagePath(pooja.getImageId())
-		 * ); }
+		 * pooja.setImageId(retriveImageService.getImagePath(pooja.getImageId()) ); }
 		 */
 		return listPooja;
 	}
@@ -94,6 +97,11 @@ public class PoojaServices {
 	public List<Pooja> getPanditPoojaServices(String panditId) {
 		List<Pooja> list = poojaServiceRepositry.findByisActiveAndPanditId("1", panditId);
 		return list;
+	}
+
+	public List<Pooja> getPoojaServices(List<String> poojaIdList) {
+		List<Pooja> listOfPooja = poojaServiceRepositry.findByServiceIdIn(poojaIdList);
+		return listOfPooja;
 	}
 
 	public boolean savePoojaReview(Map<String, String> requestParam) {
@@ -121,5 +129,30 @@ public class PoojaServices {
 
 		}
 
+	}
+
+	public List<PoojaServicesPricing> getPackagesForPoojaService(String poojaId) {
+		return poojaServicePricingRepositry.findPoojaPackages(poojaId);
+	}
+
+	public List<Map<String, Object>> getPackageInDetails(List<PoojaServicesPricing> packagesForPoojaService) {
+
+		List<Map<String, Object>> list = new ArrayList<>(packagesForPoojaService.size());
+
+		for (PoojaServicesPricing poojaServicesPricing : packagesForPoojaService) {
+			Map<String, Object> map = new HashMap();
+
+			map.put("Pooja_Service_Id", poojaServicesPricing.getPoojaServicePricingPrimaryKey().getServiceId());
+			map.put("Package_Id", poojaServicesPricing.getPoojaServicePricingPrimaryKey().getPoojaPackageCategoryId());
+			map.put("Price", poojaServicesPricing.getPrice()+"");
+			map.put("Cuurent_Discount", poojaServicesPricing.getDiscount()+"");
+			
+			/*map.put("Pooja_Mode_Name", poojaServicesPricing.getPoojaServicePricingPrimaryKey().get);
+			map.put("Pooja_Mode_Desc", poojaServicesPricing.getPoojaPackageDetails().getPackageDescription());*/
+			
+			list.add(map);
+		}
+		
+		return list;
 	}
 }

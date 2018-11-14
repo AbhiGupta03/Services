@@ -12,6 +12,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -33,7 +34,6 @@ import com.restApp.religiousIndia.response.status.ResponseStatus;
 import com.restApp.religiousIndia.services.cmsServices.CmsPanditServices;
 import com.restApp.religiousIndia.services.cmsServices.CmsTempleService;
 import com.restApp.religiousIndia.services.users.UserServices;
-import com.restApp.religiousIndia.utilities.AmazonClient;
 
 @RestController
 @CrossOrigin
@@ -47,7 +47,7 @@ public class CmsTempleController {
 	private CmsPanditServices cmsPanditServices;
 
 	@Autowired
-	private UserServices userServices;
+	UserServices userServices;
 
 	@Value("${folderToUploadImages}")
 	private final String folderToUploadImages = null;
@@ -56,18 +56,6 @@ public class CmsTempleController {
 	private final String folderToUploadVideos = null;
 
 	private Path write;
-
-	private AmazonClient amazonClient;
-
-	@Autowired
-	CmsTempleController(AmazonClient amazonClient) {
-		this.amazonClient = amazonClient;
-	}
-
-	@PostMapping("/uploadFile")
-	public String uploadFile(@RequestParam(value = "file") MultipartFile file) {
-		return this.amazonClient.uploadFile(file);
-	}
 
 	@GetMapping("/getAllRoles")
 	@PreAuthorize("hasRole('ROLE_SUPER_ADMIN')")
@@ -81,6 +69,31 @@ public class CmsTempleController {
 			return ResponseEntity.ok(response);
 		} catch (Exception e) {
 			logger.error("Error in getAllRoles(CMSController):" + e);
+			response.setStatus(ResponseStatus.INTERNAL_SERVER_ERROR);
+			response.setResponse("");
+			return ResponseEntity.ok(response);
+		}
+	}
+
+	@GetMapping("/getAllActiveTemplesName")
+	public ResponseEntity<Response> getAllActiveTempleNames() {
+		Response response = new Response();
+
+		try {
+			List<String[]> allActiveTempleNames = cmsTempleService.getAllActiveTempleNames();
+
+			if (allActiveTempleNames != null) {
+				response.setResponse(allActiveTempleNames);
+				response.setStatus(ResponseStatus.OK);
+				return ResponseEntity.ok(response);
+			} else {
+				response.setResponse("No data found");
+				response.setStatus(ResponseStatus.NO_DATA_FOUND);
+				return ResponseEntity.ok(response);
+			}
+
+		} catch (Exception e) {
+			logger.error("Error in getAllActiveTemplesName(CMSController):" + e);
 			response.setStatus(ResponseStatus.INTERNAL_SERVER_ERROR);
 			response.setResponse("");
 			return ResponseEntity.ok(response);

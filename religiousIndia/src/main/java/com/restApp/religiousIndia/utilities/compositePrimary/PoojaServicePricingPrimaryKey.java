@@ -4,13 +4,15 @@ import java.io.Serializable;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
 import javax.validation.constraints.NotNull;
+
+import com.restApp.religiousIndia.data.entities.pooja.PoojaModes;
 
 @Embeddable
 public class PoojaServicePricingPrimaryKey implements Serializable {
-	/**
-	 * 
-	 */
+	
 	private static final long serialVersionUID = 1L;
 
 	@NotNull
@@ -19,6 +21,10 @@ public class PoojaServicePricingPrimaryKey implements Serializable {
 	@NotNull
 	@Column(name = "POOJA_PACKAGE_CATEGORY_ID")
 	private String poojaPackageCategoryId;
+	
+	@OneToOne
+	@JoinColumn(name = "POOJA_MODE_ID")
+	private PoojaModes poojaMode;
 
 	public PoojaServicePricingPrimaryKey() {
 	}

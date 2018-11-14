@@ -164,7 +164,7 @@ public class CmsTempleService {
 			}
 
 			if (templeTimings != null) {
-				
+
 				String timing = String.join(",", templeTimings);
 
 				if (timing != null) {
@@ -178,7 +178,7 @@ public class CmsTempleService {
 			}
 
 			if (aartiTimings != null) {
-				
+
 				String aarti = String.join(",", aartiTimings);
 
 				if (aarti != null) {
@@ -756,7 +756,7 @@ public class CmsTempleService {
 		return response;
 	}
 
-	public String saveImage(String imageType, String originalFilename,String type) {
+	public String saveImage(String imageType, String originalFilename, String type) {
 		Image image = new Image();
 		if (type.equalsIgnoreCase("image")) {
 			image.setCategory("");
@@ -814,5 +814,9 @@ public class CmsTempleService {
 		} else {
 			return false;
 		}
+	}
+
+	public List<String[]> getAllActiveTempleNames() {
+		return templeRepositry.getAllActiveTempleNames();
 	}
 }

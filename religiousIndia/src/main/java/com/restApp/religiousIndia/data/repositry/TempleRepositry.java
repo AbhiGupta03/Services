@@ -34,5 +34,11 @@ public interface TempleRepositry extends CrudRepository<Temple, String> {
 	@Query(value = Most_Hits, nativeQuery = true)
 	public List<Temple> findByMostHits();
 
-	Optional<CmsTemple> findByTempleName(String name);
+	Optional<Temple> findByTempleName(String name);
+	
+	List<Temple> findByTempleNameContaining(String templeName);
+	
+	static final String All_Temples_List_Name="SELECT Temple_Id,Temple_Name from RI_TEMPLE where Is_Active=1";
+	@Query(value = All_Temples_List_Name, nativeQuery = true)
+	public List<String[]> getAllActiveTempleNames();
 }

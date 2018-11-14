@@ -1,5 +1,6 @@
 package com.restApp.religiousIndia.controllers;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -15,9 +16,12 @@ import org.springframework.web.bind.annotation.RestController;
 import com.restApp.religiousIndia.data.entities.Cities;
 import com.restApp.religiousIndia.data.entities.FamousThoughts;
 import com.restApp.religiousIndia.data.entities.MainMenuItem;
+import com.restApp.religiousIndia.data.entities.Temple;
+import com.restApp.religiousIndia.data.entities.pandit.PanditDetails;
 import com.restApp.religiousIndia.data.entities.users.UserDetailsImpl;
 import com.restApp.religiousIndia.data.repositry.pandit.PanditDetailsRepositry;
 import com.restApp.religiousIndia.response.Response;
+import com.restApp.religiousIndia.response.status.ResponseStatus;
 import com.restApp.religiousIndia.services.common.CommonDataService;
 import com.restApp.religiousIndia.services.homeDataService.HomeDataService;
 import com.restApp.religiousIndia.services.imageServices.RetriveImageService;
@@ -57,6 +61,91 @@ public class CommonControllers {
 
 	@Autowired
 	PanditDataService panditDataService;
+
+	@GetMapping("/search/{type}")
+	public ResponseEntity<Response> search(@PathVariable("type") String type,
+			@RequestParam("param") String searchParam) {
+		logger.info("Search request with type:" + type + " and request param:" + searchParam);
+
+		Response response = new Response();
+
+		try {
+			switch (type) {
+			case "temple":
+				List<Temple> templesByTempleName = templeServices.getTemplesByTempleName(searchParam);
+
+				if (templesByTempleName != null) {
+					if (!templesByTempleName.isEmpty()) {
+						List<Map<String, Object>> templeListInDetails = templeServices
+								.getTempleListInDetails(templesByTempleName);
+						response.setStatus(ResponseStatus.OK);
+						response.setResponse(templeListInDetails);
+					} else {
+						response.setStatus(ResponseStatus.NO_DATA_FOUND);
+						response.setResponse("No record with matching param");
+					}
+				} else {
+					response.setStatus(ResponseStatus.NO_DATA_FOUND);
+					response.setResponse("No record with matching param");
+				}
+				break;
+
+			case "event":
+
+				break;
+
+			case "pandit":
+				response = panditDataService.searchPandit(searchParam);
+				break;
+
+			case "all":
+				List<Map<String, Object>> searchData = new ArrayList<Map<String, Object>>();
+
+				List<Temple> temples = templeServices.getTemplesByTempleName(searchParam);
+
+				if (temples != null) {
+					if (!temples.isEmpty()) {
+						searchData = templeServices.getTempleListInDetails(temples);
+					}
+				}
+
+				List<PanditDetails> panditByPanditName = panditDataService.getPanditByPanditName(searchParam);
+
+				if (panditByPanditName != null) {
+					if (!panditByPanditName.isEmpty()) {
+						List<Map<String, Object>> panditListInDetails = panditDataService
+								.getPanditListInDetails(panditByPanditName);
+						searchData.addAll(panditListInDetails);
+					}
+				}
+
+				if (searchData != null) {
+					if (!searchData.isEmpty()) {
+						response.setStatus(ResponseStatus.OK);
+						response.setResponse(searchData);
+					} else {
+						response.setStatus(ResponseStatus.NO_DATA_FOUND);
+						response.setResponse("No record with matching param");
+					}
+				} else {
+					response.setStatus(ResponseStatus.NO_DATA_FOUND);
+					response.setResponse("No record with matching param");
+				}
+				break;
+
+			default:
+				response.setStatus(ResponseStatus.BAD_REQUEST);
+				response.setResponse("Unexpected search type");
+				break;
+			}
+			return ResponseEntity.ok(response);
+		} catch (Exception e) {
+			logger.error("Error in search with type:" + type + "and search param :" + searchParam + "is:" + e);
+			response.setStatus(ResponseStatus.INTERNAL_SERVER_ERROR);
+			response.setResponse("");
+			return ResponseEntity.ok(response);
+		}
+	}
 
 	@GetMapping("/getAllCities")
 	public List<Cities> getAllCities() {
@@ -104,12 +193,12 @@ public class CommonControllers {
 		logger.info("Getting Banner Details");
 		return homeDataService.getHomeBannerDetails();
 	}
-	
-	/*@GetMapping("/getBannerDetails")
-	public List<Map<String, String>> getBannerDetails() {
-		logger.info("Getting Banner Details");
-		return homeDataService.getBannerDetails();
-	}*/
+
+	/*
+	 * @GetMapping("/getBannerDetails") public List<Map<String, String>>
+	 * getBannerDetails() { logger.info("Getting Banner Details"); return
+	 * homeDataService.getBannerDetails(); }
+	 */
 
 	@GetMapping("/getLogInType/{loginId}")
 	public String getLogInType(@PathVariable("loginId") String loginId) {

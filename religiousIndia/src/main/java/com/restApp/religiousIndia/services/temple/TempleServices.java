@@ -43,6 +43,8 @@ public interface TempleServices {
 
 	public List<Temple> getTemplesByTempleIdList(List<String> templeIdList);
 
+	public List<Temple> getTemplesByTempleName(String templeName);
+
 	public List<Map<String, Object>> getTempleListInDetails(List<Temple> templesList);
 
 	public Temple getTemplesByTempleId(String templeId);

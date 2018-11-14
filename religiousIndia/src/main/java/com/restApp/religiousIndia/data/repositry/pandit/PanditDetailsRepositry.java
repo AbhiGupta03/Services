@@ -28,4 +28,6 @@ public interface PanditDetailsRepositry extends CrudRepository<PanditDetails, St
 
 	@Query(value = Get_Five_Top_Rated_Pandit, nativeQuery = true)
 	List<PanditDetails> getFiveTopRatedPandits();
+	
+	//List<PanditDetails> findBy
 }

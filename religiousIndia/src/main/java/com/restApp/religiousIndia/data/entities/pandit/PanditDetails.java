@@ -27,6 +27,17 @@ public class PanditDetails extends AuditFields<String> {
 
 	private Integer userId;
 
+	@Column(name = "Pooja_Services")
+	private String poojaServices;
+
+	public String getPoojaServices() {
+		return poojaServices;
+	}
+
+	public void setPoojaServices(String poojaServices) {
+		this.poojaServices = poojaServices;
+	}
+
 	@Column(name = "SUBSCRIPTION_DETAILS_ID")
 	private String subsscriptionDetailsId;
 

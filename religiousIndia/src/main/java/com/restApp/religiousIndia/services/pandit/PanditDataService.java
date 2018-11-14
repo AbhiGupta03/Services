@@ -7,11 +7,9 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
@@ -365,11 +363,28 @@ public class PanditDataService {
 			panditDetails.put("Image_Id", imagePath);
 
 			panditDetails.put("Location", address.getCity());
-			List<String> poojaServicesNames = new ArrayList<>();
-			poojaServices.getPanditPoojaServices(panditId)
-					.forEach(pooja -> poojaServicesNames.add(pooja.getServiceName()));
 
-			panditDetails.put("Pooja_Services", poojaServicesNames);
+			String poojaServices = pandit.getPoojaServices();
+
+			if (poojaServices != null) {
+				if (!poojaServices.isEmpty()) {
+					List<String> poojServedList = Arrays.asList(poojaServices.split(","));
+
+					List<String> poojaServicesNames = new ArrayList<>();
+
+					poojaServiceRepositry.findByServiceIdIn(poojServedList)
+							.forEach(pooja -> poojaServicesNames.add(pooja.getServiceName()));
+
+					panditDetails.put("Pooja_Services", poojaServicesNames);
+				}
+			}
+			/*
+			 * List<String> poojaServicesNames = new ArrayList<>();
+			 * poojaServices.getPanditPoojaServicesDetails(panditId) .forEach(pooja ->
+			 * poojaServicesNames.add(pooja.getServiceName()));
+			 */
+
+			// panditDetails.put("Pooja_Services", poojaServicesNames);
 			panditDetails.put("Desc", pandit.getPanditDesc());
 			panditDetailsList.add(panditDetails);
 		}
@@ -386,7 +401,7 @@ public class PanditDataService {
 		return panditTempleAssociationRepositry.findByIsActiveAndTempleId("1", templeId);
 	}
 
-	public boolean savePanditReview(Map<String, String> requestParam,Integer userId) {
+	public boolean savePanditReview(Map<String, String> requestParam, Integer userId) {
 		logger.info("Method: savePanditReview for request:" + requestParam);
 		try {
 			String panditId = requestParam.get("panditId");
@@ -398,7 +413,7 @@ public class PanditDataService {
 			panditReview.setReviewDesc(requestParam.get("reviewDesc"));
 			panditReview.setPanditId(panditId);
 			panditReview.setUserReview(requestParam.get("userReview"));
-			panditReview.setUserId(userId+"");
+			panditReview.setUserId(userId + "");
 			CustomerReview isSave = customerReviewRepositry.save(panditReview);
 			if (isSave == null) {
 				return false;
@@ -757,7 +772,7 @@ public class PanditDataService {
 	}
 
 	public Map<String, Object> getPanditSchedule(String panditId) {
-		logger.info("Method: getPanditPoojaServices for panditId:" + panditId);
+		logger.info("Method: getPanditSchedule for panditId:" + panditId);
 		Map<String, Object> schedule = new HashMap<>();
 
 		List<Map<String, Object>> panditBookingDetails = getPanditBookingDetails(panditId);
@@ -917,6 +932,95 @@ public class PanditDataService {
 			response.setResponse(topPanditList);
 		}
 
+		return response;
+	}
+
+	public String[] getPoojaServedByandit(String panditId) {
+		PanditDetails panditDetails = panditDetailsRepositry.findByPanditId(panditId);
+		String[] poojaServices = null;
+		if (panditDetails != null) {
+			poojaServices = panditDetails.getPoojaServices().split(",");
+		}
+		return poojaServices;
+	}
+
+	public Response getPanditPoojaServicesDetails(String panditId) {
+		logger.info("Method: getPanditPoojaServicesDetails for panditId:" + panditId);
+		Response response = new Response();
+		List<Map<String, String>> poojaServices = new ArrayList<>();
+		PanditDetails panditDetails = panditDetailsRepositry.findByPanditId(panditId);
+
+		List<String> poojaIdList = null;
+
+		if (panditDetails != null) {
+			poojaIdList = Arrays.asList(panditDetails.getPoojaServices().split(","));
+		}
+
+		List<Pooja> poojaServicesList = poojaServiceRepositry.findByServiceIdIn(poojaIdList);
+		if (poojaServicesList != null) {
+			String serviceId = "";
+			PoojaServicesPricing servicesPricing = null;
+			// get the pricing for the premium package
+			final String poojaPackageCategoryId = "3";
+
+			try {
+				for (Pooja pooja : poojaServicesList) {
+					Map<String, String> map = new HashMap<>();
+					pooja.setImageId(retriveImageService.getImagePath(pooja.getImageId()));
+					serviceId = pooja.getServiceId();
+					map.put("Image_Id", pooja.getImageId());
+					map.put("Service_Id", serviceId);
+					map.put("Pooja_Name", pooja.getServiceName());
+					map.put("Service_Desc", pooja.getServiceDesc());
+					servicesPricing = poojaServicePricingRepositry
+							.findOne(new PoojaServicePricingPrimaryKey(serviceId, poojaPackageCategoryId));
+					map.put("Pooja_Discounted_Price",
+							(servicesPricing.getPrice() - servicesPricing.getDiscount()) + "");
+					map.put("Pooja_Package_Id",
+							servicesPricing.getPoojaServicePricingPrimaryKey().getPoojaPackageCategoryId());
+					poojaServices.add(map);
+				}
+			} catch (Exception e) {
+				logger.error("Error:" + e + "in getPanditPoojaServices");
+				response.setStatus(ResponseStatus.INTERNAL_SERVER_ERROR);
+				response.setResponse("Something went wrong.Please try after some time.");
+			}
+
+			response.setStatus(ResponseStatus.OK);
+			response.setResponse(poojaServices);
+		} else {
+			response.setStatus(ResponseStatus.NO_DATA_FOUND);
+			response.setResponse("Data not Found");
+		}
+		return response;
+
+	}
+
+	public List<PanditDetails> getPanditByPanditName(String panditName) {
+		List<Integer> userByName = userServices.getUserByNameLike(panditName);
+
+		return panditDetailsRepositry.findByisActiveAndUserIdIn("1", userByName);
+	}
+
+	public Response searchPandit(String searchParam) {
+		Response response = new Response();
+		List<PanditDetails> panditByPanditName = getPanditByPanditName(searchParam);
+
+		if (panditByPanditName != null) {
+			if (!panditByPanditName.isEmpty()) {
+				List<Map<String, Object>> panditListInDetails = getPanditListInDetails(panditByPanditName);
+
+				response.setStatus(ResponseStatus.OK);
+				response.setResponse(panditListInDetails);
+			} else {
+				response.setStatus(ResponseStatus.NO_DATA_FOUND);
+				response.setResponse("No record with matching param");
+			}
+
+		} else {
+			response.setStatus(ResponseStatus.NO_DATA_FOUND);
+			response.setResponse("No record with matching param");
+		}
 		return response;
 	}
 }

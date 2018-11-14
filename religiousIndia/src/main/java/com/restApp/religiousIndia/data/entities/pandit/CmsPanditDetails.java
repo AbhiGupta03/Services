@@ -74,6 +74,9 @@ public class CmsPanditDetails extends AuditFields<String> {
 	@Column(name = "general_availablity_timing")
 	private String generalAvailablityTiming;
 
+	@Column(columnDefinition = "TEXT",name="Pooja_Service_List")
+	private String poojaServiceList;
+
 	public int getVersion() {
 		return versionId;
 	}
@@ -224,6 +227,14 @@ public class CmsPanditDetails extends AuditFields<String> {
 
 	public void setIsNewUser(String isNewUser) {
 		this.isNewUser = isNewUser;
+	}
+
+	public String getPoojaServiceList() {
+		return poojaServiceList;
+	}
+
+	public void setPoojaServiceList(String poojaServiceList) {
+		this.poojaServiceList = poojaServiceList;
 	}
 
 	/*

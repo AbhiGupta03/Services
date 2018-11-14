@@ -115,6 +115,9 @@ public class CmsPanditServices {
 		signUpRequest.setRequestType("signUp");
 		signUpRequest.setRequestParam(details);
 
+		details.put("roleId", "2");
+		details.put("logInType", "4");
+
 		Response signUpResponse = loginService.signUp(signUpRequest);
 
 		if (signUpResponse.getStatus().equals(ResponseStatus.OK)) {
@@ -138,8 +141,8 @@ public class CmsPanditServices {
 
 	private String createJsonObject(List<Map<String, String>> awardsDetails) {
 		JSONArray jsonArray = new JSONArray();
-		for (Map<String, String> map : awardsDetails) {
-			JSONObject jsonObject = new JSONObject(map);
+		for (Map<String, String> award : awardsDetails) {
+			JSONObject jsonObject = new JSONObject(award);
 			jsonArray.put(jsonObject);
 		}
 		return jsonArray.toString();
@@ -162,6 +165,14 @@ public class CmsPanditServices {
 					if (specilaizationList != null) {
 						if (specilaizationList.size() != 0) {
 							cmsPanditDetails.setSpecilaization(specilaization);
+						}
+					}
+
+					String poojaServedList = (String) requestMap.get("poojaServedList");
+
+					if (poojaServedList != null) {
+						if (!poojaServedList.isEmpty()) {
+							cmsPanditDetails.setPoojaServiceList(poojaServedList);
 						}
 					}
 

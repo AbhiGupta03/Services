@@ -1,8 +1,9 @@
 package com.restApp.religiousIndia.data.entities.pooja;
 
-import javax.persistence.Column;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Version;
 
@@ -17,9 +18,6 @@ public class PoojaServicesPricing {
 	@EmbeddedId
 	private PoojaServicePricingPrimaryKey poojaServicePricingPrimaryKey;
 
-	@Column(name = "POOJA_MODE_ID")
-	private String poojaModeId;
-
 	private double price;
 
 	private double discount;
@@ -32,14 +30,6 @@ public class PoojaServicesPricing {
 
 	public void setVersionId(int versionId) {
 		this.versionId = versionId;
-	}
-
-	public String getPoojaModeId() {
-		return poojaModeId;
-	}
-
-	public void setPoojaModeId(String poojaModeId) {
-		this.poojaModeId = poojaModeId;
 	}
 
 	public double getPrice() {
@@ -73,4 +63,5 @@ public class PoojaServicesPricing {
 	public void setIsActive(String isActive) {
 		this.isActive = isActive;
 	}
+
 }
