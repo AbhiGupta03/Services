@@ -37,36 +37,36 @@ public class AmazonClient {
 		AWSCredentials credentials = new BasicAWSCredentials(this.accessKey, this.secretKey);
 		this.s3client = new AmazonS3Client(credentials);
 	}
-	
+
 	public String uploadFile(MultipartFile multipartFile) {
 
-	    String fileUrl = "";
-	    try {
-	        File file = convertMultiPartToFile(multipartFile);
-	        String fileName = generateFileName(multipartFile);
-	        fileUrl = endpointUrl + "/" + bucketName + "/" + fileName;
-	        uploadFileTos3bucket(fileName, file);
-	        file.delete();
-	    } catch (Exception e) {
-	       e.printStackTrace();
-	    }
-	    return fileUrl;
+		String fileUrl = "";
+		try {
+			File file = convertMultiPartToFile(multipartFile);
+			String fileName = generateFileName(multipartFile);
+			fileUrl = endpointUrl + "/" + bucketName + "/" + fileName;
+			uploadFileTos3bucket(fileName, file);
+			file.delete();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return fileUrl;
 	}
-	
+
 	private File convertMultiPartToFile(MultipartFile file) throws IOException {
-	    File convFile = new File(file.getOriginalFilename());
-	    FileOutputStream fos = new FileOutputStream(convFile);
-	    fos.write(file.getBytes());
-	    fos.close();
-	    return convFile;
+		File convFile = new File(file.getOriginalFilename());
+		FileOutputStream fos = new FileOutputStream(convFile);
+		fos.write(file.getBytes());
+		fos.close();
+		return convFile;
 	}
-	
+
 	private String generateFileName(MultipartFile multiPart) {
-	    return new Date().getTime() + "-" + multiPart.getOriginalFilename().replace(" ", "_");
+		return new Date().getTime() + "-" + multiPart.getOriginalFilename().replace(" ", "_");
 	}
-	
+
 	private void uploadFileTos3bucket(String fileName, File file) {
-	    s3client.putObject(new PutObjectRequest(bucketName, fileName, file)
-	            .withCannedAcl(CannedAccessControlList.PublicRead));
+		s3client.putObject(new PutObjectRequest(bucketName, fileName, file)
+				.withCannedAcl(CannedAccessControlList.PublicReadWrite));
 	}
 }

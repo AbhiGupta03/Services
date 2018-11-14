@@ -101,7 +101,7 @@ public class LoginService {
 		Response response = new Response();
 		try {
 			if (logInRepositry.exists(userId)) {
-				Login login=logInRepositry.findByUserId(userId).orElse(null);
+				Login login = logInRepositry.findByUserId(userId).orElse(null);
 				String storedPwd = login.getPass();
 
 				boolean isPwdMatched = passwordEncoder.matches(oldPwd, storedPwd);
@@ -225,15 +225,15 @@ public class LoginService {
 		logger.info("Change password request for userId:" + userId);
 		Response response = new Response();
 
-		//pwd = passwordEncoder.encode(pwd);
+		// pwd = passwordEncoder.encode(pwd);
 
 		Login userLogin = logInRepositry.findOne(userId);
 
 		String[] historyPassword = getHistoryPassword(userLogin);
-		Boolean isFoundInHistory=false;
+		Boolean isFoundInHistory = false;
 		for (String password : historyPassword) {
 			if (passwordEncoder.matches(pwd, password)) {
-				isFoundInHistory=true;
+				isFoundInHistory = true;
 				break;
 			}
 		}
@@ -356,41 +356,16 @@ public class LoginService {
 					return response;
 				}
 				if (details.equalsIgnoreCase("1")) {
-					UserDetailsImpl userDetails = new UserDetailsImpl();
-					userDetails.setEmail(email);
-					String fName = requestParam.get("fName");
-					if (fName == null) {
-						response.setStatus(ResponseStatus.ERROR);
-						response.setResponse("Please enter your name");
-						return response;
-					}
-					String[] name = fName.split(" ");
-					userDetails.setFirstName(name[0]);
-					if (name.length >= 2) {
-						userDetails.setMiddleName(name[1]);
-					} else {
-						userDetails.setMiddleName("");
-					}
+					Map<String, String> map = new HashMap<>();
 
-					String LName = requestParam.get("lName");
-					if (LName != null) {
-						userDetails.setLastName(LName);
-					} else {
-						userDetails.setLastName("");
-					}
+					map.put("fName", requestParam.get("fName"));
+					map.put("lName", requestParam.get("lName"));
+					map.put("gender", requestParam.get("gender"));
+					map.put("roleId", requestParam.get("roleId"));
+					map.put("email", requestParam.get("email"));
 
-					userDetails.setGender(requestParam.get("gender"));
-					userDetails.setUserRoleDetails(roleId);
-
-					try {
-						Integer userId = userServices.saveUserPrimaryDetails(userDetails);
-						response.setStatus(ResponseStatus.OK);
-						response.setResponse(userDetails);
-					} catch (UserNotSavedException e) {
-						logger.error("Error:" + e);
-					} catch (Exception e) {
-						logger.error("Error:" + e);
-					}
+					response = createUserDetails(map);
+					return response;
 				}
 			}
 		} else {
@@ -401,4 +376,50 @@ public class LoginService {
 
 	}
 
+	public Response createUserDetails(Map<String, String> map) {
+		Response response = new Response();
+		UserDetailsImpl userDetails = new UserDetailsImpl();
+		userDetails.setEmail(map.get("email"));
+		String fName = map.get("fName");
+		if (fName == null) {
+			response.setStatus(ResponseStatus.ERROR);
+			response.setResponse("Please enter your name");
+			return response;
+		}
+		String[] name = fName.split(" ");
+		userDetails.setFirstName(name[0]);
+		if (name.length >= 2) {
+			userDetails.setMiddleName(name[1]);
+		} else {
+			userDetails.setMiddleName("");
+		}
+
+		String LName = map.get("lName");
+		if (LName != null) {
+			userDetails.setLastName(LName);
+		} else {
+			userDetails.setLastName("");
+		}
+
+		userDetails.setPrimaryPhone(map.get("contactNo"));
+		userDetails.setGender(map.get("gender"));
+		userDetails.setUserRoleDetails(map.get("roleId"));
+
+		try {
+			Integer userId = userServices.saveUserPrimaryDetails(userDetails);
+			response.setStatus(ResponseStatus.OK);
+			response.setResponse(userDetails);
+		} catch (UserNotSavedException e) {
+			logger.error("Error:" + e);
+			response.setStatus(ResponseStatus.ERROR);
+			response.setResponse("UserNotSavedException");
+			return response;
+		} catch (Exception e) {
+			logger.error("Error:" + e);
+			response.setStatus(ResponseStatus.ERROR);
+			response.setResponse("User Not saved ");
+			return response;
+		}
+		return response;
+	}
 }

@@ -1,5 +1,8 @@
 package com.restApp.religiousIndia.data.repositry.pandit;
 
+import java.util.List;
+
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
 import com.restApp.religiousIndia.data.entities.pandit.CmsPanditDetails;
@@ -20,10 +23,10 @@ public interface CMSPanditDetailsRepositry extends CrudRepository<CmsPanditDetai
 
 	List<PanditDetails> findByPanditRatingGreaterThanEqualOrderByPanditRatingDesc(Double rating);
 
-	List<PanditDetails> findByPanditRatingGreaterThanEqual(Double rating);
+	List<PanditDetails> findByPanditRatingGreaterThanEqual(Double rating);*/
 
-	public static final String Get_Five_Top_Rated_Pandit = "select * from ri_pandit_details order by RI_PANDIT_RATING desc LIMIT 5";
+	public static final String Get_Cms_Pandits = "select * from ri_pandit_details_temp order by CREATED_ON desc";
 
-	@Query(value = Get_Five_Top_Rated_Pandit, nativeQuery = true)
-	List<PanditDetails> getFiveTopRatedPandits();*/
+	@Query(value = Get_Cms_Pandits, nativeQuery = true)
+	List<CmsPanditDetails> getCmsPandits();
 }

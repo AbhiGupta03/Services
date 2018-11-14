@@ -1,14 +1,21 @@
 package com.restApp.religiousIndia.data.entities.pandit;
 
+import java.util.Date;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 import javax.persistence.Version;
+
+import org.hibernate.annotations.GenericGenerator;
 
 import com.restApp.religiousIndia.common.PanditCategoryId;
 import com.restApp.religiousIndia.common.TypeOfAvailability;
@@ -23,6 +30,8 @@ public class PanditDetails extends AuditFields<String> {
 	private int versionId;
 
 	@Id
+	@GenericGenerator(name = "sequence__id", strategy = "com.restApp.religiousIndia.utilities.PanditIdGenrator")
+	@GeneratedValue(generator = "sequence__id")
 	private String panditId;
 
 	private Integer userId;
@@ -44,6 +53,10 @@ public class PanditDetails extends AuditFields<String> {
 	@Column
 	@Enumerated(EnumType.STRING)
 	private PanditCategoryId panditCategoryId;
+
+	@Column(name = "Pandit_exp_Start_Date")
+	@Temporal(TemporalType.DATE)
+	private Date panditJoinDate;
 
 	@Column(name = "TYPE_OF_AVAILABILITY")
 	@Enumerated(EnumType.STRING)
@@ -254,6 +267,14 @@ public class PanditDetails extends AuditFields<String> {
 
 	public void setTotalClients(int totalClients) {
 		this.totalClients = totalClients;
+	}
+
+	public Date getPanditJoinDate() {
+		return panditJoinDate;
+	}
+
+	public void setPanditJoinDate(Date panditJoinDate) {
+		this.panditJoinDate = panditJoinDate;
 	}
 
 	/*
